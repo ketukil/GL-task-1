@@ -12,40 +12,46 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <event2/event.h>
 #include "detector.h"
+#include "util.h"
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Enums, Variables, Structures, Typedefs                                    │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-struct DETECTOR
-{
-    int curr_state;
-    int max_states;
-    const char *sequence;
-    event_t *event;
-    timeval_t *time;
-} detector;
+int curr_state;
+int max_states;
+const char *sequence;
+
+struct event_base *ev_base;
+struct event *timeout_event;
+struct timeval tv_time;
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Prototypes                                                                │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-static void Timeout(evutil_socket_t, short, void *); // Timeout after 2000ms
-static void Found();                                 //
+static void Timeout(int, short, void *); // Timeout after 2000ms
+static void Found();                     //
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Business functions                                                        │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-void detector_init(const char *sq, event_t *ev, timeval_t *time)
+void detector_init(event_base_t *ev_base, time_t delay_ms, const char *sq)
 {
-    detector.sequence = sq;
-    detector.curr_state = 0;
-    detector.max_states = strlen(sq);
-    detector.event = ev;
-    detector.time = time;
+
+    // Initialize Timeout as one shot timer
+    calc_timevalue(&tv_time, delay_ms);
+    timeout_event = event_new(ev_base, -1, 0, &Timeout, NULL);
+    // event_add(timeout_event, time);
+
+    // Detector initial conditions
+    sequence = sq;
+    curr_state = 0;
+    max_states = strlen(sq);
 }
 
 /**
@@ -54,8 +60,13 @@ void detector_init(const char *sq, event_t *ev, timeval_t *time)
  */
 void Process(char symbol)
 {
-    static int index = 0;
-    printf("%c\n", symbol);
+    static int index = 1;
+
+    index = ++curr_state;
+    if (index % 50 == 0)
+        event_add(timeout_event, &tv_time);
+
+    printf("%d: %c\n", index, symbol);
 }
 
 /**
@@ -68,6 +79,8 @@ static void Timeout(int fd, short event, void *arg)
     (void)event;
     (void)arg;
 
+    curr_state = 0;
+
     printf("::: Timeout :::\n");
 }
 
@@ -77,5 +90,6 @@ static void Timeout(int fd, short event, void *arg)
  */
 static void Found()
 {
+    curr_state = 0;
     printf("Found.\n");
 }

@@ -19,7 +19,7 @@ typedef struct event event_t;
 typedef struct event_base event_base_t;
 typedef struct timeval timeval_t;
 
-void detector_init(const char *, event_t *, timeval_t *);
+void detector_init(event_base_t *, time_t, const char *);
 void Process(char);
 
 #endif /* DETECTOR_H */
