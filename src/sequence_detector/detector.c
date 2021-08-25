@@ -54,8 +54,8 @@ void detector_init(event_base_t *ev_base, time_t delay_ms, const char *search_pa
 }
 
 /**
- * @brief Tries to detect externali defined search pattern in 
- * the incoming symbols. Timesout if no character is received 
+ * @brief Tries to detect externally defined pattern in the
+ * incoming symbols. Timesout if no character is received 
  * for time defined on initialization.
  * @param symbol Single input character
  */

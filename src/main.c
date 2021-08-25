@@ -21,7 +21,7 @@
 #define GET_SIZE(p) sizeof(p) / sizeof(*p)
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
-// │ CONSTANTS & TEST                                                                   │
+// │ CONSTANTS & TEST                                                          │
 // └───────────────────────────────────────────────────────────────────────────┘
 
 #define TEST_FROM_LIST 1 // 0 = random, 1 = from test list
@@ -35,6 +35,8 @@ const char *const TEST_INPUT_SEQUENCE[] = {
     "GLpboiasjdbpoijOX"};   // FALSE (no R)
 #define TEST_INPUT_SIZE GET_SIZE(TEST_INPUT_SEQUENCE)
 
+const time_t TICKER_PERIOD = 10; // ms
+const time_t TIMEOUT_PERIOD = 2000; // ms
 const char *const SEARCH_SEQUENCE = "GLROX";
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
@@ -62,8 +64,8 @@ int main(int argc, char *argv[])
 
     ev_base = event_base_new();
 
-    ticker_init(ev_base, 10);
-    detector_init(ev_base, 2000, SEARCH_SEQUENCE);
+    ticker_init(ev_base, TICKER_PERIOD);
+    detector_init(ev_base, TIMEOUT_PERIOD, SEARCH_SEQUENCE);
 
     printf("::: Detector is detecting... please stand by :::\n");
 
@@ -135,7 +137,7 @@ char get_rand_ascii(void)
     char rand_char;
     for (;;)
     {
-        rand_char = rand() % 128;
+        rand_char = rand() % INT8_MAX;
 
         switch (rand_char)
         {
