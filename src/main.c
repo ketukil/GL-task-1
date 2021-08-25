@@ -9,19 +9,19 @@
  * 
  */
 
+#include "detector.h"
+#include "util.h"
+#include <event2/event.h>
 #include <stdio.h>
 #include <stdlib.h> // srand(), rand()
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h> // strlen()
-#include <event2/event.h>
-#include "detector.h"
-#include "util.h"
 
 #define GET_SIZE(p) sizeof(p) / sizeof(*p)
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
-// │ CONSTANTS & TEST                                                          │
+// │ CONSTANTS                                                                 │
 // └───────────────────────────────────────────────────────────────────────────┘
 
 #define TEST_FROM_LIST 1 // 0 = random, 1 = from test list
@@ -35,13 +35,9 @@ const char *const TEST_INPUT_SEQUENCE[] = {
     "GLpboiasjdbpoijOX"};   // FALSE (no R)
 #define TEST_INPUT_SIZE GET_SIZE(TEST_INPUT_SEQUENCE)
 
-const time_t TICKER_PERIOD = 10; // ms
+const time_t TICKER_PERIOD = 100; // ms
 const time_t TIMEOUT_PERIOD = 2000; // ms
 const char *const SEARCH_SEQUENCE = "GLROX";
-
-// ┌───────────────────────────────────────────────────────────────────────────┐
-// │ Enums, Variables, Structures, Typedefs                                    │
-// └───────────────────────────────────────────────────────────────────────────┘
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Prototypes                                                                │
@@ -103,7 +99,7 @@ void ticker(int fd, short event, void *arg)
     is_sequence_found = Process(input_character);
     if (is_sequence_found)
     {
-        printf("::: FOUND :::");
+        printf("::: FOUND :::\n");
     }
 
     (void)fd;

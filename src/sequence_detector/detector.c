@@ -9,14 +9,14 @@
  * 
  */
 
-#include <stdio.h>
-#include <stdlib.h> // malloc()
-#include <stdbool.h>
-#include <stdint.h>
-#include <string.h> // strlen()
-#include <event2/event.h>
 #include "detector.h"
 #include "util.h"
+#include <event2/event.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h> // malloc()
+#include <string.h> // strlen()
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Enums, Variables, Structures, Typedefs                                    │
@@ -34,8 +34,8 @@ struct timeval timeout_tv;
 // │ Prototypes                                                                │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-static void Timeout(int, short, void *); // Timeout after 2000ms
-static void Found();                     //
+static void Timeout(int, short, void *);
+static void Found();
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Business functions                                                        │
@@ -62,8 +62,8 @@ void detector_init(event_base_t *ev_base, time_t delay_ms, const char *search_pa
 bool Process(char symbol)
 {
     bool is_found = false;
-    static int32_t counts = 0;
-    counts++;
+    static int32_t count = 0;
+    count++;
 
     char pattern_symbol = pattern[state];
     if (pattern_symbol == symbol)
@@ -72,9 +72,8 @@ bool Process(char symbol)
 
         if (state >= pattern_len)
         {
-            Found(counts);
+            Found(count);
             is_found = true;
-            counts = 0;
         }
     }
 
