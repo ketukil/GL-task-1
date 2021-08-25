@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 }
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
-// │ Test related code                                                         │
+// │ Ticker                                                                    │
 // └───────────────────────────────────────────────────────────────────────────┘
 
 /**
@@ -123,8 +123,12 @@ void ticker_init(struct event_base *ev_base, time_t delay_ms)
     event_add(ticker_event, &time_tv);
 }
 
+// ┌───────────────────────────────────────────────────────────────────────────┐
+// │ Character streaming                                                       │
+// └───────────────────────────────────────────────────────────────────────────┘
+
 /**
- * @brief Generates ASCII character limited to Base64 range
+ * @brief Generate a random ASCII character in Base64 range
  * 
  * @return char Base64 ASCII character
  */
