@@ -9,10 +9,11 @@
  * 
  */
 
+#include <stdio.h>
+#include <stdlib.h> // malloc()
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <string.h> // strlen()
 #include <event2/event.h>
 #include "detector.h"
 #include "util.h"
@@ -21,13 +22,13 @@
 // │ Enums, Variables, Structures, Typedefs                                    │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-int curr_state;
-int max_states;
-const char *sequence;
+const char *pattern;
+int32_t pattern_len;
+int32_t state;
 
 struct event_base *ev_base;
 struct event *timeout_event;
-struct timeval tv_time;
+struct timeval timeout_tv;
 
 // ┌───────────────────────────────────────────────────────────────────────────┐
 // │ Prototypes                                                                │
@@ -40,56 +41,68 @@ static void Found();                     //
 // │ Business functions                                                        │
 // └───────────────────────────────────────────────────────────────────────────┘
 
-void detector_init(event_base_t *ev_base, time_t delay_ms, const char *sq)
+void detector_init(event_base_t *ev_base, time_t delay_ms, const char *search_pattern)
 {
-
     // Initialize Timeout as one shot timer
-    calc_timevalue(&tv_time, delay_ms);
     timeout_event = event_new(ev_base, -1, 0, &Timeout, NULL);
-    // event_add(timeout_event, time);
+    calc_timevalue(&timeout_tv, delay_ms);
 
     // Detector initial conditions
-    sequence = sq;
-    curr_state = 0;
-    max_states = strlen(sq);
+    pattern = search_pattern;
+    pattern_len = strlen(search_pattern);
+    state = 0;
 }
 
 /**
- * @brief Entry point function callled every 100ms
- * 
+ * @brief Tries to detect externali defined search pattern in 
+ * the incoming symbols. Timesout if no character is received 
+ * for time defined on initialization.
+ * @param symbol Single input character
  */
-void Process(char symbol)
+bool Process(char symbol)
 {
-    static int index = 1;
+    bool is_found = false;
+    static int32_t counts = 0;
+    counts++;
 
-    index = ++curr_state;
-    if (index % 50 == 0)
-        event_add(timeout_event, &tv_time);
+    char pattern_symbol = pattern[state];
+    if (pattern_symbol == symbol)
+    {
+        state++;
 
-    printf("%d: %c\n", index, symbol);
+        if (state >= pattern_len)
+        {
+            Found(counts);
+            is_found = true;
+            counts = 0;
+        }
+    }
+
+    // Rearm timeout counter
+    event_add(timeout_event, &timeout_tv);
+    return is_found;
 }
 
 /**
- * @brief Reset input sequence buffer
+ * @brief 
  * 
  */
 static void Timeout(int fd, short event, void *arg)
 {
+    printf("::: Timeout :::\n");
+    state = 0; // Reset Process state
+
     (void)fd;
     (void)event;
     (void)arg;
-
-    curr_state = 0;
-
-    printf("::: Timeout :::\n");
 }
 
-/**
+/** 
  * @brief Handles output when desired sequence is found
  * 
  */
-static void Found()
+static void Found(int32_t counts)
 {
-    curr_state = 0;
-    printf("Found.\n");
+    printf("::: %s ::: Found after %d counts:::\n", pattern, counts);
+    state = 0; // Reset Process state
 }
