@@ -25,6 +25,7 @@
 const char *pattern;
 int32_t pattern_len;
 int32_t state;
+int32_t count = 0;
 
 struct event_base *ev_base;
 struct event *timeout_event;
@@ -62,7 +63,7 @@ void detector_init(event_base_t *ev_base, time_t delay_ms, const char *search_pa
 bool Process(char symbol)
 {
     bool is_found = false;
-    static int32_t count = 0;
+
     count++;
 
     char pattern_symbol = pattern[state];
@@ -90,6 +91,7 @@ static void Timeout(int fd, short event, void *arg)
 {
     printf("::: Timeout :::\n");
     state = 0; // Reset Process state
+    count = 0;
 
     (void)fd;
     (void)event;
@@ -104,4 +106,5 @@ static void Found(int32_t counts)
 {
     printf("::: %s ::: Found after %d counts:::\n", pattern, counts);
     state = 0; // Reset Process state
+    count = 0;
 }
